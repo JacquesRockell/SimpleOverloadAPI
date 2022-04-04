@@ -50,7 +50,7 @@ router.post("/login", async (req, res) => {
 
     //Check for valid username
     const user = await User.findOne({username: req.body.username})
-    if(!user) return res.status(400).send({error: 'Invalid username'})
+    if(!user) return res.status(400).send('Invalid username')
 
     //Check if password is valid
     const validPassword = await bcrypt.compare(req.body.password, user.password)
