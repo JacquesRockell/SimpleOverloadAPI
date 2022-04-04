@@ -2,7 +2,6 @@ const serverless = require('serverless-http')
 //Express
 const express = require('express')
 const app = express()
-const router = express.Router()
 
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -41,9 +40,6 @@ try {
 } catch(error) {
     console.log(error)
 }
-
-
-app.listen(3000)
 
 
 module.exports.handler = serverless(app)
