@@ -11,6 +11,7 @@ const privateRoute = require('./privateRoutes')
 router.get("/profile", async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
+        res.send(user)
     } catch(error) {
         res.json({message: error})
     } 
