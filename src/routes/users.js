@@ -41,6 +41,21 @@ router.post("/createPlan", async (req, res) => {
     }    
 })
 
+//Delete Plan via id
+router.post("/deletePlan", async (req, res) => {
+    try { 
+        //Add plan and add to Users workout plan array
+        const user = await User.findByIdAndUpdate( 
+            req.user._id, 
+            { "$pull": { "workoutPlans": { "_id": req.body.id } } },
+            { "safe": true, "multi": false },
+        ) 
+
+        res.send('Success')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
 
 //Add Workout plan to users list
 router.post("/addPlan/:planId", async (req, res) => {
