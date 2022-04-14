@@ -51,7 +51,7 @@ router.post("/deletePlan", async (req, res) => {
             { "safe": true, "multi": false },
         ) 
 
-        res.send('Success')
+        res.send(req.body.id)
     } catch(error) {
         res.status(400).send(error)
     }    
