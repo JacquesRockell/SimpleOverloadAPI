@@ -27,6 +27,15 @@ const workoutPlanValidation = (data) => {
     return schema.validate(data)
 }
 
+const dayValidation = (data) => {
+    const schema = Joi.object({
+        name: Joi.string().min(1).required()
+    })
+
+    return schema.validate(data)
+}
+
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
 module.exports.workoutPlanValidation = workoutPlanValidation
+module.exports.dayValidation = dayValidation

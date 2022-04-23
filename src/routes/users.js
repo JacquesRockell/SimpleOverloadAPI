@@ -2,8 +2,8 @@ const express = require('express')
 const mongoose = require('mongoose')
 const router = express.Router()
 const User = require('../models/User')
-const WorkoutPlan = require('../models/WorkoutPlan')
-const { registerValidation, loginValidation, workoutPlanValidation } = require('../validation')
+const { Day, WorkoutPlan } = require('../models/WorkoutPlan')
+const { registerValidation, loginValidation, workoutPlanValidation, dayValidation } = require('../validation')
 const privateRoute = require('./privateRoutes')
 
 
@@ -20,7 +20,7 @@ router.get("/profile", async (req, res) => {
 //Ceate new workout plan
 router.post("/createPlan", async (req, res) => {
     try {
-        //Validate registration data
+        //Validate Workout Plan data
         const { error } = workoutPlanValidation(req.body)
         if(error != null) return res.status(400).send(error.details[0].message)
 
@@ -41,11 +41,24 @@ router.post("/createPlan", async (req, res) => {
     }    
 })
 
+//Rename Plan via index
+router.post("/renamePlan/:index", async (req, res) => {
+    try {         
+        const user = await User.findById(req.user._id)  
+        user.workoutPlans[req.params.index].title = req.body.title
+        user.markModified('workoutPlans')
+        await user.save()
+        res.status(200).send('Success')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
 //Delete Plan via index
 router.post("/deletePlan/:index", async (req, res) => {
     try {         
         const user = await User.findById(req.user._id)  
-        user.workoutPlans.splice(req.params.index,1)
+        user.workoutPlans.splice(req.params.index, 1)
         const savedUser = await user.save()
         res.send('Success')
     } catch(error) {
@@ -77,18 +90,61 @@ router.post("/addPlan/:planId", async (req, res) => {
     } 
 })
 
- //Check for duplicates
-// let error = false
-// const userPlans = await User.findById(req.user._id)   
-// userPlans.workoutPlans.forEach(planId => {
-//     if(planId == req.params.planId) error = 'Plan already added'
-// })     
-// if(error) return res.status(400).send(error)
+//Add day to plan
+router.post("/plan/:index/addDay", async (req, res) => {
+    try {
+        //Validate registration data
+        const { error } = dayValidation(req.body)
+        if(error != null) return res.status(400).send(error.details)
 
-// const user = await User.findByIdAndUpdate( 
-//     req.user._id, 
-//     { "$push": { "workoutPlans": req.params.planId } },
-//     { "new": true, "upsert": true },
-// )
+        const user = await User.findById(req.user._id)  
+        const daysArr = user.workoutPlans[req.params.index].days
+        
+        let order = 0
+        daysArr.forEach(day => {
+            if(day.order >= order) order = day.order + 1
+        })
+
+        const day = new Day({
+            name: req.body.name,
+            order: order
+        })    
+
+        user.workoutPlans[req.params.index].days.push(day)
+        user.markModified('workoutPlans')
+
+        await user.save()
+
+        res.status(200).send('Success')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
+//Rename Day via index
+router.post("/plan/:PI/renameDay/:DI", async (req, res) => {
+    try {         
+        const user = await User.findById(req.user._id)  
+        user.workoutPlans[req.params.PI].days[req.params.DI].name = req.body.name
+        user.markModified('workoutPlans')
+        await user.save()
+        res.status(200).send('Success')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
+//Delete Day via index
+router.post("/plan/:PI/deleteDay/:DI", async (req, res) => {
+    try {         
+        const user = await User.findById(req.user._id)  
+        user.workoutPlans[req.params.PI].days.splice(req.params.DI, 1)
+        user.markModified('workoutPlans')
+        await user.save()
+        res.status(200).send('Success')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
 
 module.exports = router

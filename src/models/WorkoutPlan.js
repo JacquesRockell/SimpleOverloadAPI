@@ -29,16 +29,19 @@ const setSchema = mongoose.Schema({
 })
 
 const daySchema = mongoose.Schema({
-    day: {
+    name: {
         type: String,
         required: true,
         minLength: 1,
         maxLength: 255,
     },
-    order: Number,
+    order: {
+        type: Number,
+        required: true
+    },
     sets: [[setSchema]]
 
-})
+}, {collection: "Users"})
 
 const workoutPlanSchema = mongoose.Schema({
     title: {
@@ -52,6 +55,6 @@ const workoutPlanSchema = mongoose.Schema({
 
 
 
-
-
-module.exports = mongoose.model('WorkoutPlan', workoutPlanSchema)
+const Day = mongoose.model('Day', daySchema)
+const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema)
+module.exports = { Day, WorkoutPlan }
