@@ -2,8 +2,8 @@ const express = require('express')
 const mongoose = require('mongoose')
 const router = express.Router()
 const User = require('../models/User')
-const { Day, WorkoutPlan } = require('../models/WorkoutPlan')
-const { registerValidation, loginValidation, workoutPlanValidation, dayValidation } = require('../validation')
+const { Set, Day, WorkoutPlan } = require('../models/WorkoutPlan')
+const { setValidation, workoutPlanValidation, dayValidation } = require('../validation')
 const privateRoute = require('./privateRoutes')
 
 
@@ -141,6 +141,43 @@ router.post("/plan/:PI/deleteDay/:DI", async (req, res) => {
         user.workoutPlans[req.params.PI].days.splice(req.params.DI, 1)
         user.markModified('workoutPlans')
         await user.save()
+        res.status(200).send('Success')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
+
+//Add Set to day
+router.post("/plan/:PI/day/:DI/addSet/:amount", async (req, res) => {
+    try {
+        //Validate set data
+        const { error } = setValidation(req.body)
+        if(error != null) return res.status(400).send(error.details)
+        //Find user and sets array
+        const user = await User.findById(req.user._id)  
+        const setsArr = user.workoutPlans[req.params.PI].days[req.params.DI].sets
+
+        let order = 0
+        for(i = req.params.amount; i > 0; i--){
+            setsArr.forEach(set => {
+                if(set.order >= order) order = set.order + 1
+            })
+
+            const set = new Set({
+                name: req.body.name,
+                order: order,
+                rpe: req.body.rpe,
+                repRange: req.body.repRange,
+                weight: req.body.weight
+            })    
+        
+            user.workoutPlans[req.params.PI].days[req.params.DI].sets.push(set)
+        }
+
+        user.markModified('workoutPlans')
+        await user.save()
+
         res.status(200).send('Success')
     } catch(error) {
         res.status(400).send(error)

@@ -16,15 +16,21 @@ const setSchema = mongoose.Schema({
     },
     rpe: {
         type: Number,
-        required: true,
+        required: false,
         minLength: 1,
         maxLength: 255,
     },
     repRange: {
         type: Array,
-        required: true,
+        required: false,
         minLength: 2,
         maxLength: 2,
+    },
+    weight: {
+        type: Number,
+        required: false,
+        minLength: 1,
+        maxLength: 255,
     }
 })
 
@@ -54,7 +60,7 @@ const workoutPlanSchema = mongoose.Schema({
 }, {collection: "Workout_Plans"})
 
 
-
+const Set = mongoose.model('Set', setSchema)
 const Day = mongoose.model('Day', daySchema)
 const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema)
-module.exports = { Day, WorkoutPlan }
+module.exports = { Day, WorkoutPlan, Set }

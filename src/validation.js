@@ -35,6 +35,18 @@ const dayValidation = (data) => {
     return schema.validate(data)
 }
 
+const setValidation = (data) => {
+    const schema = Joi.object({
+        name: Joi.string().min(1).required(),
+        rpe: Joi.number().max(10),
+        repRange: Joi.array().min(2).required(),
+        weight: Joi.number().max(5000),
+    })
+
+    return schema.validate(data)
+}
+
+module.exports.setValidation = setValidation
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
 module.exports.workoutPlanValidation = workoutPlanValidation

@@ -16,28 +16,25 @@ router.get("/", async (req, res) => {
 })
 
 router.post("/register", async (req, res) => {
-    //Validate registration data
-    const { error } = registerValidation(req.body)
-    if(error != null) return res.status(400).send(error.details[0].message)
-    //Check for duplicates
-    const doesExist = await User.findOne({username: req.body.username})
-    if(doesExist != null) return res.status(400).send('Username has been taken.')
-    
-    //Hash password
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(req.body.password, salt)
-
-    const user = new User({
-        username: req.body.username,
-        password: hashedPassword 
-    })
-
     try {
-        const savedUser = await user.save()
-        res.json({
-            registered: true,
-            _id: user._id    
+        //Validate registration data
+        const { error } = registerValidation(req.body)
+        if(error != null) return res.status(400).send(error.details[0].message)
+        //Check for duplicates
+        const doesExist = await User.findOne({username: req.body.username})
+        if(doesExist != null) return res.status(400).send('Username has been taken.')
+        
+        //Hash password
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(req.body.password, salt)
+
+        const user = new User({
+            username: req.body.username,
+            password: hashedPassword 
         })
+   
+        const savedUser = await user.save()
+        res.send(savedUser)
     } catch(error) {
         res.status(400).send(error)
     }    
