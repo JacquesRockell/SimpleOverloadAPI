@@ -5,8 +5,7 @@
   "main": "api.js",
   "scripts": {
     "start-local": "nodemon src/api.js",
-    "start": "netlify-lambda serve src",
-    "build": "netlify-lambda build src"
+    "start": "node src/api.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,8 +18,6 @@
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.2.7",
-    "netlify-lambda": "^2.0.15",
-    "nodemon": "^2.0.15",
-    "serverless-http": "^2.7.0"
+    "nodemon": "^2.0.15"
   }
 }

@@ -1,0 +1,9 @@
+{
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/master/deployment-apps-v1.json": [
+            "test.yaml"
+        ],
+        "Kubernetes": "*.yaml",
+        "https://json.schemastore.org/kustomization.json": "file:///c%3A/Users/jacqu/Code/Personal/SimpleOverloadProject/SimpleOverloadAPI/deployment.yml"
+    }
+}

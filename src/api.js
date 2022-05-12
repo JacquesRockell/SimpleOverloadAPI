@@ -1,4 +1,3 @@
-const serverless = require('serverless-http')
 //Express
 const express = require('express')
 const app = express()
@@ -15,24 +14,24 @@ app.use(cors())
 app.use(bodyParser.json())
 
 //Import Local Routes
-// const authRoute = require('./routes/auth')
-// app.use('/api/auth', authRoute)
-
-// const workoutPlansRoute = require('./routes/workoutPlans')
-// app.use('/api/workoutPlans', workoutPlansRoute)
-
-// const usersRoute = require('./routes/users')
-// app.use('/api/user', privateRoute, usersRoute)
-
-//Import Server Routes
 const authRoute = require('./routes/auth')
-app.use('/.netlify/functions/api/auth', authRoute)
+app.use('/api/auth', authRoute)
 
 const workoutPlansRoute = require('./routes/workoutPlans')
-app.use('/.netlify/functions/api/workoutPlans', workoutPlansRoute)
+app.use('/api/workoutPlans', workoutPlansRoute)
 
 const usersRoute = require('./routes/users')
-app.use('/.netlify/functions/api/user', privateRoute, usersRoute)
+app.use('/api/user', privateRoute, usersRoute)
+
+//Import Server Routes
+// const authRoute = require('./routes/auth')
+// app.use('/.netlify/functions/api/auth', authRoute)
+
+// const workoutPlansRoute = require('./routes/workoutPlans')
+// app.use('/.netlify/functions/api/workoutPlans', workoutPlansRoute)
+
+// const usersRoute = require('./routes/users')
+// app.use('/.netlify/functions/api/user', privateRoute, usersRoute)
 
 //Connect
 try {
@@ -41,5 +40,7 @@ try {
     console.log(error)
 }
 
+app.listen(8080, () => `API listening on http://localhost:8080/api`)
 
-module.exports.handler = serverless(app)
+
+//module.exports.handler = serverless(app)

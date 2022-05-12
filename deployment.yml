@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simpleoverloadapi
+  labels:
+    app: simpleoverloadapi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simpleoverloadapi
+  template:
+    metadata:
+      labels:
+        app: simpleoverloadapi
+    spec:
+      containers:
+      - name: simpleoverloadapi
+        image: sha256:33af0a597e225a8c717ab0524d90ce27067ebd563fc824caee5f30568fe51b46
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: simpleoverloadapi
+spec:
+  type: NodePort
+  selector:
+    app: simpleoverloadapi
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
