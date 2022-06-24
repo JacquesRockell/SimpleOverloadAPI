@@ -5,7 +5,7 @@ metadata:
   labels:
     app: simpleoverloadapi
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: simpleoverloadapi
@@ -16,26 +16,29 @@ spec:
     spec:
       containers:
       - name: simpleoverloadapi
-        image: sha256:33af0a597e225a8c717ab0524d90ce27067ebd563fc824caee5f30568fe51b46
+        image: jacquesrockell/simpleoverloadapi:1.6
+        
         resources:
-          limits:
+          limits: 
             memory: "512Mi"
             cpu: "500m"
         ports:
         - containerPort: 8080
-
-
+        env:
+          - name: DB_CONNECTION
+            value: "mongodb+srv://jacquesrockell:v2hCKdZRd6kwpMN@jrcluster0.wd77u.mongodb.net/SimpleOverload?retryWrites=true&w=majority"
+          - name: TOKEN_SECRET
+            value: "tsasd"
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: simpleoverloadapi
+  name: simpleoverloadapi-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: simpleoverloadapi
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 8080

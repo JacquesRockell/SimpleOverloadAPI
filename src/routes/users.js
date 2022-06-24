@@ -184,4 +184,70 @@ router.post("/plan/:PI/day/:DI/addSet/:amount", async (req, res) => {
     }    
 })
 
+
+//Delete set via id
+router.delete("/plans/:planIndex/days/:dayIndex/sets/:id", async (req, res) => {
+    try {
+        //Check if set id is in a valid format
+        if(mongoose.Types.ObjectId.isValid(req.params.id) == false) return res.status(400).send('Invalid Id')
+        //Find user and sets array
+        const user = await User.findById(req.user._id)  
+        const setsArr = user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets
+        //Find index of set with id
+        let setIndex = setsArr.findIndex(ob => { return ob._id == req.params.id })
+        if(SI === -1) return res.status(400).send('Set not found')
+
+        user.workoutPlans[req.params.PI].days[req.params.DI].sets.splice(SI, 1)
+        user.markModified('workoutPlans')
+        await user.save()
+
+        res.status(200).send('Successfully deleted set!')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
+//Edit set order via index
+router.put("/plans/:planIndex/days/:dayIndex/reorderSets", async (req, res) => {
+    try {
+        //Find user and sets array
+        const user = await User.findById(req.user._id)  
+        const setsArr = user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets
+
+        const movedSet = setsArr[req.body.sourceIndex]
+        user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets.splice(req.body.sourceIndex, 1)
+        user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets.splice(req.body.destinationIndex, 0, movedSet)
+        
+        user.markModified('workoutPlans')
+        await user.save()
+        res.status(200).send('Successfully reordered sets!')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
+//Edit Set via id
+router.put("/plans/:planIndex/days/:dayIndex/sets/:setId", async (req, res) => {
+    try {
+        //Check if id is in a valid format
+        if(mongoose.Types.ObjectId.isValid(req.params.setId) == false) return res.status(400).send('Invalid Id')
+        //Find user and sets array
+        const user = await User.findById(req.user._id)  
+        const setsArr = user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets
+
+        let setIndex = setsArr.findIndex(set => { return set._id == req.params.setId})
+        let set = setsArr[setIndex]
+        set.rpe = req.body.rpe
+        set.repRange = req.body.repRange
+        set.weight = req.body.weight
+        user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets.splice(setIndex, 1, set)
+
+        user.markModified('workoutPlans')
+        await user.save()
+        res.status(200).send('Successfully edited set!')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
 module.exports = router

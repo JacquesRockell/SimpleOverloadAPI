@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 
-
 const setSchema = mongoose.Schema({
     name: {
         type: String,
@@ -32,7 +31,7 @@ const setSchema = mongoose.Schema({
         minLength: 1,
         maxLength: 255,
     }
-})
+}, {collection: "Users"})
 
 const daySchema = mongoose.Schema({
     name: {

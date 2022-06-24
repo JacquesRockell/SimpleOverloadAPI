@@ -22,7 +22,7 @@ app.use('/api/workoutPlans', workoutPlansRoute)
 
 const usersRoute = require('./routes/users')
 app.use('/api/user', privateRoute, usersRoute)
-
+ 
 //Import Server Routes
 // const authRoute = require('./routes/auth')
 // app.use('/.netlify/functions/api/auth', authRoute)
@@ -40,7 +40,7 @@ try {
     console.log(error)
 }
 
-app.listen(8080, () => `API listening on http://localhost:8080/api`)
+app.listen(8080)
 
 
 //module.exports.handler = serverless(app)
