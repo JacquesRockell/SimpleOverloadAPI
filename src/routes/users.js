@@ -18,27 +18,26 @@ router.get("/profile", async (req, res) => {
 })
 
 //Ceate new workout plan
-router.post("/createPlan", async (req, res) => {
+router.post("/plans", async (req, res) => { 
     try {
         //Validate Workout Plan data
         const { error } = workoutPlanValidation(req.body)
-        if(error != null) return res.status(400).send(error.details[0].message)
-
+        if(error != null) return res.status(400).send(error.details)
+        
         const plan = new WorkoutPlan({
             title: req.body.title
         })
- 
-        //Add plan and add to Users workout plan array
-        const user = await User.findByIdAndUpdate( 
-            req.user._id, 
-            { "$push": { "workoutPlans": plan }},
-            { "new": true, "upsert": true },
-        ) 
 
-        res.send('Success')
+        const user = await User.findById(req.user._id)  
+        user.workoutPlans.push(plan)
+
+        user.markModified('workoutPlans')
+        await user.save()
+
+        res.status(200).send('Successfully added plan!')
     } catch(error) {
         res.status(400).send(error)
-    }    
+    } 
 })
 
 //Rename Plan via index
@@ -55,12 +54,14 @@ router.post("/renamePlan/:index", async (req, res) => {
 })
 
 //Delete Plan via index
-router.post("/deletePlan/:index", async (req, res) => {
+router.delete("/plans/:planIndex", async (req, res) => {
     try {         
         const user = await User.findById(req.user._id)  
-        user.workoutPlans.splice(req.params.index, 1)
-        const savedUser = await user.save()
-        res.send('Success')
+
+        user.workoutPlans.splice(req.params.planIndex, 1)
+
+        await user.save()
+        res.status(200).send('Successfully deleted plan!')
     } catch(error) {
         res.status(400).send(error)
     }    
@@ -91,72 +92,79 @@ router.post("/addPlan/:planId", async (req, res) => {
 })
 
 //Add day to plan
-router.post("/plan/:index/addDay", async (req, res) => {
+router.post("/plans/:planIndex/days", async (req, res) => {
     try {
         //Validate registration data
         const { error } = dayValidation(req.body)
         if(error != null) return res.status(400).send(error.details)
-
-        const user = await User.findById(req.user._id)  
-        const daysArr = user.workoutPlans[req.params.index].days
         
-        let order = 0
-        daysArr.forEach(day => {
-            if(day.order >= order) order = day.order + 1
-        })
-
         const day = new Day({
             name: req.body.name,
-            order: order
-        })    
+        })
 
-        user.workoutPlans[req.params.index].days.push(day)
-        user.markModified('workoutPlans')
-
-        await user.save()
-
-        res.status(200).send('Success')
-    } catch(error) {
-        res.status(400).send(error)
-    }    
-})
-
-//Rename Day via index
-router.post("/plan/:PI/renameDay/:DI", async (req, res) => {
-    try {         
         const user = await User.findById(req.user._id)  
-        user.workoutPlans[req.params.PI].days[req.params.DI].name = req.body.name
+        user.workoutPlans[req.params.planIndex].days.push(day)
+
         user.markModified('workoutPlans')
         await user.save()
-        res.status(200).send('Success')
+
+        res.status(200).send('Successfully added day!')
     } catch(error) {
         res.status(400).send(error)
     }    
 })
 
-//Delete Day via index
-router.post("/plan/:PI/deleteDay/:DI", async (req, res) => {
+//Rename Day via id
+router.put("/plans/:planIndex/days/:id", async (req, res) => {
     try {         
+        //Find User and day array
         const user = await User.findById(req.user._id)  
-        user.workoutPlans[req.params.PI].days.splice(req.params.DI, 1)
+        const dayArr = user.workoutPlans[req.params.planIndex].days
+        
+        let dayIndex = dayArr.findIndex(ob => { return ob._id == req.params.id })
+        if(dayIndex == -1) return res.status(400).send('Day not found!')
+
+        user.workoutPlans[req.params.planIndex].days[dayIndex].name = req.body.name
+
         user.markModified('workoutPlans')
         await user.save()
-        res.status(200).send('Success')
+
+        res.status(200).send('Successfully renamed day!')
     } catch(error) {
         res.status(400).send(error)
     }    
 })
 
+//Delete Day via id
+router.delete("/plans/:planIndex/days/:id", async (req, res) => {
+    try {         
+        //Find User and day array
+        const user = await User.findById(req.user._id)  
+        const dayArr = user.workoutPlans[req.params.planIndex].days
 
-//Add Set to day
-router.post("/plan/:PI/day/:DI/addSet/:amount", async (req, res) => {
+        let dayIndex = dayArr.findIndex(ob => { return ob._id == req.params.id })
+        if(dayIndex == -1) return res.status(400).send('Day not found!')
+
+        user.workoutPlans[req.params.planIndex].days.splice(dayIndex, 1)
+
+        user.markModified('workoutPlans')
+        await user.save()
+
+        res.status(200).send('Successfully deleted day!')
+    } catch(error) {
+        res.status(400).send(error)
+    }    
+})
+
+//Add Set via index
+router.post("/plans/:planIndex/days/:dayIndex/add/:amount", async (req, res) => {
     try {
         //Validate set data
         const { error } = setValidation(req.body)
         if(error != null) return res.status(400).send(error.details)
         //Find user and sets array
         const user = await User.findById(req.user._id)  
-        const setsArr = user.workoutPlans[req.params.PI].days[req.params.DI].sets
+        const setsArr = user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets
 
         let order = 0
         for(i = req.params.amount; i > 0; i--){
@@ -172,13 +180,13 @@ router.post("/plan/:PI/day/:DI/addSet/:amount", async (req, res) => {
                 weight: req.body.weight
             })    
         
-            user.workoutPlans[req.params.PI].days[req.params.DI].sets.push(set)
+            user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets.push(set)
         }
 
         user.markModified('workoutPlans')
         await user.save()
 
-        res.status(200).send('Success')
+        res.status(200).send('Successfully added set!')
     } catch(error) {
         res.status(400).send(error)
     }    
@@ -195,9 +203,9 @@ router.delete("/plans/:planIndex/days/:dayIndex/sets/:id", async (req, res) => {
         const setsArr = user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets
         //Find index of set with id
         let setIndex = setsArr.findIndex(ob => { return ob._id == req.params.id })
-        if(SI === -1) return res.status(400).send('Set not found')
+        if(setIndex === -1) return res.status(400).send('Set not found')
 
-        user.workoutPlans[req.params.PI].days[req.params.DI].sets.splice(SI, 1)
+        user.workoutPlans[req.params.planIndex].days[req.params.dayIndex].sets.splice(setIndex, 1)
         user.markModified('workoutPlans')
         await user.save()
 
